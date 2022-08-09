@@ -37,7 +37,7 @@ jobs:
           key: backend-build
 
 workflows:
-  create_infrastructure_workflow:
+  build_frontend_backend_workflow:
     jobs:
       - build-frontend
       - build-backend
