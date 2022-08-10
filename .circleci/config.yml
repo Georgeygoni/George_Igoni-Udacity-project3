@@ -204,7 +204,7 @@ jobs:
 workflows:
   my_pipeline_workflower:
     jobs:
-       - build-frontend
+      - build-frontend
       - build-backend
       - test-frontend:
           requires: [build-frontend]
