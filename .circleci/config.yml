@@ -157,7 +157,7 @@ jobs:
       - destroy_environment  
 
 workflows:
-  build_frontend_backend_workflow:
+  my_pipeline_workflowerfb ghbn:
     jobs:
       - build-frontend
       - build-backend
@@ -170,4 +170,6 @@ workflows:
       - scan-backend:
           requires: [build-backend]
       - deploy-infrastructure
+          requires: [scan-backend]
       - configure-infrastructure
+          requires: [deploy-infrastructure]
