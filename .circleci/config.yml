@@ -2,7 +2,18 @@
 version: 2.1
 
 commands:
-   destroy_environment:
+  install_ansible:
+    description: Install Ansible
+    steps:
+      - run:
+        name: Install Ansible
+        command: |
+          sudo apt update
+          sudo apt install software-preperties-common -y
+          sudo add-apt-repository --yes --update ppa:ansible/ansible
+          sudo apt install ansible -y
+
+  destroy_environment:
     steps:
       - run:
           name: Destroy environment
@@ -143,17 +154,14 @@ jobs:
         
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: cimg/base:stable
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints: ["41:01:a5:4e:6c:e7:41:95:be:91:9e:a8:ab:4f:6f:c5"] 
       - attach_workspace:
           at: ~/
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update ansible 
+      - install_ansible
       - run:
           name: Configure server
           command: |
@@ -162,7 +170,7 @@ jobs:
       - destroy_environment  
 
 workflows:
-  my_pipeline_workflowerfb ghbn:
+  my_pipeline_workflower:
     jobs:
       - build-frontend
       - build-backend
