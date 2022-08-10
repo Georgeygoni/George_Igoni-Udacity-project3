@@ -21,7 +21,7 @@ commands:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
-            
+
   destroy_environment:
     steps:
       - run:
@@ -171,6 +171,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - install_ansible
+      - install_aws
       - run:
           name: Configure server
           command: |
