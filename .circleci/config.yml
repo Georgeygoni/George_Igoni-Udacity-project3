@@ -132,7 +132,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - destroy_environment
-        when: on_fail 
+          when: on_fail 
 
 workflows:
   build_frontend_backend_workflow:
