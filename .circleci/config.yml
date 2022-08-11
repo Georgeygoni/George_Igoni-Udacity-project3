@@ -43,7 +43,7 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl -- insecure "https://kvdb.io/WuEfjcJumKeQpVGeeSvzwZ/migration_<<parameters.workflow_id>>")
+            SUCCESS=$(curl --insecure "https://kvdb.io/WuEfjcJumKeQpVGeeSvzwZ/migration_<<parameters.workflow_id>>")
             if(($SUCCESS==1));
             then
               cd ~/project/backend
@@ -214,6 +214,7 @@ jobs:
           command: |
             cd backend
             npm install
+            npm audit fix --audit-level=critical --force
             npm run migrations > migrations_dump.txt
      
       - run:
