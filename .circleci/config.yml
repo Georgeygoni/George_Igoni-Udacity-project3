@@ -203,7 +203,7 @@ jobs:
 
   run-migrations:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/node:18.4.0
     steps:
       - checkout
       - install_aws
@@ -213,9 +213,7 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            npm cache verify
             npm install
-            npm audit fix --audit-level=critical --force
             npm run migrations > migrations_dump.txt
      
       - run:
