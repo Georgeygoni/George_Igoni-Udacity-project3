@@ -2,6 +2,15 @@
 version: 2.1
 
 commands:
+  install_nodejs:
+    description: Install Node.js 13
+    steps:
+      - run:
+          name: Install Node.js 13
+          command: |
+            curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+            sudo apt install -y nodejs
+
   install_ansible:
     description: Install Ansible
     steps:
@@ -226,7 +235,85 @@ jobs:
             fi
       - destroy_environment
       - revert_migrations
-    
+
+
+  deploy-frontend:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+
+      - add_ssh_keys:
+          fingerprints:
+            - "f0:61:98:0c:8a:99:89:42:b2:28:58:df:04:aa:a0:d1"
+      - attach_workspace:
+          at: ~/
+
+      - install_nodejs
+      - install_aws
+      - install_ansible
+      - run:
+          name: Get backend url
+          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filter Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
+            --output text
+            )
+            export API_URL = "http://${BACKEND_IP}:3030"
+            echo "API_URL = ${API_URL}"
+            echo API_URL = "http://${BACKEND_IP}:3030" >> frontend/.env
+            cat frontend/.env
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            sudo npm install -g npm@latest
+            rm -rf node_modules
+            npm install
+            npm run build
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      - destroy_environment
+      - revert_migrations
+
+      # Here's where you will add some code to rollback on failure      
+                    
+  deploy-backend:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "f0:61:98:0c:8a:99:89:42:b2:28:58:df:04:aa:a0:d1"
+      - attach_workspace:
+          at: ~/
+
+      - install_nodejs
+      - install_aws
+      - install_ansible
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+      - run:
+          name: Deploy backend
+          command: |
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            cd .circleci/ansible
+            mkdir files
+            cd files
+            tar -C ../../../backend -czvf artifact.tar.gz .
+            cd ../
+
+            echo "Contents of the inventory.txt file is ------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      - destroy_environment
+      - revert_migrations      
 
 workflows:
   my_pipeline_workflower:
@@ -247,3 +334,7 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
