@@ -4,10 +4,10 @@
     path: ~/backend-app
     state: directory
 
-- name: 'extract the tar/zipped file'
+- name: "Unarchive backend files"
   unarchive:
-    src: /home/circleci/project/artifact.tar.gz
-    dest: /home/ubuntu/backend-app
+    src: artifact.tar.gz
+    dest: ~/backend-app
 
 - name: "Installing Node Dependencies"
   shell: |
