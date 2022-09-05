@@ -160,7 +160,7 @@ jobs:
       - checkout
       - run: yum install -y tar gzip
       - attach_workspace:
-          at: ~/
+          at: my-udacity-project3
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -188,9 +188,9 @@ jobs:
             --filters "Name=tag:project,Values=myudapeople_project" \
             --output text >> .circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: ~/
+          root: my-udacity-project3
           paths:
-            - my-udacity-project3/.circleci/ansible/inventory.txt
+            - .circleci/ansible/inventory.txt
       - destroy_environment
         
   configure-infrastructure:
