@@ -190,7 +190,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - My-Udacity-project3/.circleci/ansible/inventory.txt
+            - my-udacity-project3/.circleci/ansible/inventory.txt
       - destroy_environment
         
   configure-infrastructure:
