@@ -244,8 +244,7 @@ jobs:
       - checkout
 
       - add_ssh_keys:
-          fingerprints:
-            - "d3:d8:8b:fb:cf:82:5c:84:5e:78:91:10:36:68:7b:07"
+          fingerprints: ["d3:d8:8b:fb:cf:82:5c:84:5e:78:91:10:36:68:7b:07"] 
       - attach_workspace:
           at: ~/
 
@@ -280,22 +279,18 @@ jobs:
                     
   deploy-backend:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:18.4.0  
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints:
-            - "d3:d8:8b:fb:cf:82:5c:84:5e:78:91:10:36:68:7b:07"
+          fingerprints: ["d3:d8:8b:fb:cf:82:5c:84:5e:78:91:10:36:68:7b:07"] 
       - attach_workspace:
           at: ~/
 
       - install_nodejs
       - install_aws
       - install_ansible
-      - run:
-          name: Install dependencies
-          command: |
-            # your code here
+      
       - run:
           name: Deploy backend
           command: |
@@ -312,8 +307,8 @@ jobs:
             echo "Contents of the inventory.txt file is ------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
-      - destroy_environment
-      - revert_migrations  
+      # - destroy_environment
+      # - revert_migrations  
 
   smoke-test:
     docker:
