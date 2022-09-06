@@ -140,6 +140,7 @@ jobs:
           name: analyze front-end
           command: |
             cd frontend
+            npm install
             npm audit fix 
             npm audit fix --audit-level=critical 
 
@@ -155,6 +156,7 @@ jobs:
           name: analyze back-end
           command: |
             cd backend
+            npm install
             npm audit fix 
             npm audit fix --audit-level=critical 
 
