@@ -269,12 +269,7 @@ jobs:
     steps:
       - checkout
 
-      - add_ssh_keys:
-          fingerprints: ["d3:d8:8b:fb:cf:82:5c:84:5e:78:91:10:36:68:7b:07"] 
-      - attach_workspace:
-          at: ~/
-
-
+    
       - run:
           name: Install dependencies
           command: |
@@ -291,6 +286,11 @@ jobs:
             yum install -y python3
             curl --silent --location https://rpm.nodesource.com/setup_14.x | bash -
             yum install -y nodejs
+      - add_ssh_keys:
+          fingerprints: ["d3:d8:8b:fb:cf:82:5c:84:5e:78:91:10:36:68:7b:07"] 
+      - attach_workspace:
+          at: ~/
+          
       - run:
           name: Get backend url
           command: |
