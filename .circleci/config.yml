@@ -268,8 +268,6 @@ jobs:
       # - image: cimg/base:stable
     steps:
       - checkout
-
-    
       - run:
           name: Install dependencies
           command: |
@@ -290,7 +288,7 @@ jobs:
           fingerprints: ["d3:d8:8b:fb:cf:82:5c:84:5e:78:91:10:36:68:7b:07"] 
       - attach_workspace:
           at: ~/
-          
+
       - run:
           name: Get backend url
           command: |
