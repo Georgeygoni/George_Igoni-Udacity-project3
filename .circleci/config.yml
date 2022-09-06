@@ -444,7 +444,7 @@ jobs:
   
   cleanup:
     docker:
-      - image: cimg/base:stable
+      - image: amazon/aws-cli
     steps:
       - checkout
       - install_awscli
@@ -453,23 +453,43 @@ jobs:
           command: |
             # your code here
             export STACKS=($(aws cloudformation list-stacks \
-                --query "StackSummaries[*].StackName" \
-                --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+              --query "StackSummaries[*].StackName" \
+              --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
             echo Stack names: "${STACKS[@]}"
-            export OldWorkflowID=$(curl --insecure https://kvdb.io/WuEfjcJumKeQpVGeeSvzwZ/old_workflow_id)
-            echo Old Workflow ID: $OldWorkflowID
-      - run:
-          name: Remove old stacks and files
-          command: |
-            export OldWorkflowID=$(curl --insecure https://kvdb.io/WuEfjcJumKeQpVGeeSvzwZ/old_workflow_id)
-            echo Old Workflow ID: $OldWorkflowID
+            export CURRENT_WORKFLOW_ID="${CIRCLE_WORKFLOW_ID:0:7}"
+            echo Current workflow ID: "${CURRENT_WORKFLOW_ID}"
 
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-            then
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-            fi
+            for stack in "${STACKS[@]}"
+            do
+              export OLD_WORKFLOW_ID=$(echo $stack | awk -F'-' '{print $NF}')  
+              echo OLD_WORKFLOW_ID: "${OLD_WORKFLOW_ID}"
+
+              if [[ "${OLD_WORKFLOW_ID}" != "${CURRENT_WORKFLOW_ID}" ]]
+              then
+                echo "Removing old stacks"
+                echo "Removing stack: ${stack}"
+
+                # check if bucket exists for current OLD_WORKFLOW_ID
+                if aws s3api head-bucket --bucket udapeople-${OLD_WORKFLOW_ID} --region us-east-1 2>/dev/null
+                then
+                  echo "Bucket exists"
+                  # Delete the bucket
+                  # aws s3 rb s3://udapeople-${OLD_WORKFLOW_ID} --force
+                  aws s3 rm "s3://udapeople-${OLD_WORKFLOW_ID}" --recursive
+                else
+                  echo "Bucket does not exist"
+                fi
+                aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+                aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              else 
+                echo "No old stacks to remove"
+                echo "Current stack: ${stack}"
+                echo "CURRENT_WORKFLOW_ID: ${CURRENT_WORKFLOW_ID}"
+                echo "OLD_WORKFLOW_ID: ${OLD_WORKFLOW_ID}"
+                echo "OLD_WORKFLOW_ID == CURRENT_WORKFLOW_ID: ${OLD_WORKFLOW_ID} == ${CURRENT_WORKFLOW_ID}"
+              fi
+            done
+     
      
 
 workflows:
