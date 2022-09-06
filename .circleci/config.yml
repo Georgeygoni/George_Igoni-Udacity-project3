@@ -412,7 +412,7 @@ jobs:
             echo $FRONTEND_WEBSITE
             if curl -s $FRONTEND_WEBSITE | grep "Welcome"
             then 
-              exit 0 
+              exit 1 
             else 
               exit 1
             fi
@@ -442,68 +442,68 @@ jobs:
       - destroy_environment
       - revert_migrations     
   
-  cleanup:
-    docker:
-      # Docker image here
-      - image: amazon/aws-cli
-    steps:
-      # Checkout code from git
-      - checkout
-      - run:
-          name: Get old stack workflow id
-          command: |
-            # your code here
+  # cleanup:
+  #   docker:
+  #     # Docker image here
+  #     - image: amazon/aws-cli
+  #   steps:
+  #     # Checkout code from git
+  #     - checkout
+  #     - run:
+  #         name: Get old stack workflow id
+  #         command: |
+  #           # your code here
 
-            # Fetch the Old workflow ID
-            # export OldWorkflowID=$(aws cloudformation \
-            #   list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-            #     --no-paginate --output text)
-            # echo OldWorkflowID: "${OldWorkflowID}"
+  #           # Fetch the Old workflow ID
+  #           # export OldWorkflowID=$(aws cloudformation \
+  #           #   list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+  #           #     --no-paginate --output text)
+  #           # echo OldWorkflowID: "${OldWorkflowID}"
 
-            #put the list of stacks here
-            # Fetch the stack names          
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-              --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-            echo Stack names: "${STACKS[@]}"
+  #           #put the list of stacks here
+  #           # Fetch the stack names          
+  #           export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+  #             --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
+  #           echo Stack names: "${STACKS[@]}"
 
-            export CURRENT_WORKFLOW_ID="${CIRCLE_WORKFLOW_ID:0:7}"
-            echo Current workflow ID: "${CURRENT_WORKFLOW_ID}"
+  #           export CURRENT_WORKFLOW_ID="${CIRCLE_WORKFLOW_ID:0:7}"
+  #           echo Current workflow ID: "${CURRENT_WORKFLOW_ID}"
 
-            # if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-              for stack in "${STACKS[@]}"
-              do
-                # get the last substring of the current stack name: sample 2ee8cb9
-                # export OLD_WORKFLOW_ID=$(echo $stack| cut -d'-' -f 3) # This works also
-                export OLD_WORKFLOW_ID=$(echo $stack | awk -F'-' '{print $NF}')  
-                echo OLD_WORKFLOW_ID: "${OLD_WORKFLOW_ID}"
+  #           # if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+  #             for stack in "${STACKS[@]}"
+  #             do
+  #               # get the last substring of the current stack name: sample 2ee8cb9
+  #               # export OLD_WORKFLOW_ID=$(echo $stack| cut -d'-' -f 3) # This works also
+  #               export OLD_WORKFLOW_ID=$(echo $stack | awk -F'-' '{print $NF}')  
+  #               echo OLD_WORKFLOW_ID: "${OLD_WORKFLOW_ID}"
 
-                if [[ "${OLD_WORKFLOW_ID}" != "${CURRENT_WORKFLOW_ID}" ]]
-                then
-                  # your code here
-                  echo "Removing old stacks"
-                  echo "Removing stack: ${stack}"
+  #               if [[ "${OLD_WORKFLOW_ID}" != "${CURRENT_WORKFLOW_ID}" ]]
+  #               then
+  #                 # your code here
+  #                 echo "Removing old stacks"
+  #                 echo "Removing stack: ${stack}"
 
-                  # check if bucket exists for current OLD_WORKFLOW_ID
-                  if aws s3api head-bucket --bucket udapeople-${OLD_WORKFLOW_ID} --region us-east-1 2>/dev/null
-                  then
-                    echo "Bucket exists"
-                    # Delete the bucket
-                    # aws s3 rb s3://udapeople-${OLD_WORKFLOW_ID} --force
-                    aws s3 rm "s3://udapeople-${OLD_WORKFLOW_ID}" --recursive
-                  else
-                    echo "Bucket does not exist"
-                  fi
+  #                 # check if bucket exists for current OLD_WORKFLOW_ID
+  #                 if aws s3api head-bucket --bucket udapeople-${OLD_WORKFLOW_ID} --region us-east-1 2>/dev/null
+  #                 then
+  #                   echo "Bucket exists"
+  #                   # Delete the bucket
+  #                   # aws s3 rb s3://udapeople-${OLD_WORKFLOW_ID} --force
+  #                   aws s3 rm "s3://udapeople-${OLD_WORKFLOW_ID}" --recursive
+  #                 else
+  #                   echo "Bucket does not exist"
+  #                 fi
   
-                  # aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-                  # aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-                  aws cloudformation delete-stack --stack-name ${stack}
-                else 
-                  echo "No old stacks to remove"
-                  echo "Current stack: ${stack}"
-                  echo "CURRENT_WORKFLOW_ID: ${CURRENT_WORKFLOW_ID}"
-                  echo "OLD_WORKFLOW_ID: ${OLD_WORKFLOW_ID}"
-                  echo "OLD_WORKFLOW_ID == CURRENT_WORKFLOW_ID: ${OLD_WORKFLOW_ID} == ${CURRENT_WORKFLOW_ID}"
-                fi
+  #                 # aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+  #                 # aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+  #                 aws cloudformation delete-stack --stack-name ${stack}
+  #               else 
+  #                 echo "No old stacks to remove"
+  #                 echo "Current stack: ${stack}"
+  #                 echo "CURRENT_WORKFLOW_ID: ${CURRENT_WORKFLOW_ID}"
+  #                 echo "OLD_WORKFLOW_ID: ${OLD_WORKFLOW_ID}"
+  #                 echo "OLD_WORKFLOW_ID == CURRENT_WORKFLOW_ID: ${OLD_WORKFLOW_ID} == ${CURRENT_WORKFLOW_ID}"
+  #               fi
               done
 
 
@@ -535,5 +535,5 @@ workflows:
           requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
-      - cleanup:
-        requires: [cloudfront-update]
+      # - cleanup:
+      #   requires: [cloudfront-update]
