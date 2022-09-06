@@ -443,7 +443,6 @@ jobs:
       - revert_migrations     
   
 
-  
   cleanup:
     docker:
       - image: amazon/aws-cli
